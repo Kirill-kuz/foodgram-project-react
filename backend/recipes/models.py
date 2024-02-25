@@ -4,7 +4,6 @@ from django.db import models
 from foodgram.constants import (COLOR_HEX_REGEX, DEFAULT_HEX_COLOR,
                                 MAX_COOKING_TIME, MAX_HEX_COLOR_LENGTH,
                                 MAX_NAME_LENGTH, MIN_AMOUNT, MIN_COOKING_TIME)
-
 from users.models import User
 
 
