@@ -1,9 +1,15 @@
-from django.core.validators import (MaxValueValidator, MinValueValidator,
-                                    RegexValidator)
+from django.core import validators
 from django.db import models
-from foodgram.constants import (COLOR_HEX_REGEX, DEFAULT_HEX_COLOR,
-                                MAX_COOKING_TIME, MAX_HEX_COLOR_LENGTH,
-                                MAX_NAME_LENGTH, MIN_AMOUNT, MIN_COOKING_TIME)
+
+from foodgram.constants import (
+    COLOR_HEX_REGEX,
+    DEFAULT_HEX_COLOR,
+    MAX_COOKING_TIME,
+    MAX_HEX_COLOR_LENGTH,
+    MAX_NAME_LENGTH,
+    MIN_AMOUNT,
+    MIN_COOKING_TIME,
+)
 from users.models import User
 
 
@@ -26,7 +32,7 @@ class Tag(models.Model):
         default=DEFAULT_HEX_COLOR,
         unique=True,
         validators=[
-            RegexValidator(
+            validators.RegexValidator(
                 COLOR_HEX_REGEX,
                 message='Проверьте вводимый формат.'
             )
@@ -71,10 +77,10 @@ class Recipe(models.Model):
     cooking_time = models.IntegerField(
         'Время приготовления',
         validators=[
-            MinValueValidator(
+            validators.MinValueValidator(
                 MIN_COOKING_TIME,
                 message='Минимальное время не менее 1 минуты'),
-            MaxValueValidator(MAX_COOKING_TIME)
+            validators.MaxValueValidator(MAX_COOKING_TIME)
         ]
     )
     image = models.ImageField(
@@ -94,7 +100,7 @@ class Recipe(models.Model):
     )
     ingredients = models.ManyToManyField(
         Ingredient,
-        through='Recipe_ingredient',
+        through='Recipeingredient',
         through_fields=('recipe', 'ingredient'),
         verbose_name='Ингредиенты'
     )
@@ -112,7 +118,7 @@ class Recipe(models.Model):
         return self.name
 
 
-class Recipe_ingredient(models.Model):
+class Recipeingredient(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
@@ -127,7 +133,7 @@ class Recipe_ingredient(models.Model):
     )
     amount = models.IntegerField(
         'Количество',
-        validators=[MinValueValidator(MIN_AMOUNT)]
+        validators=[validators.MinValueValidator(MIN_AMOUNT)]
     )
 
     class Meta:
@@ -147,7 +153,7 @@ class Recipe_ingredient(models.Model):
                 f'{self.ingredient.measurement_unit}')
 
 
-class Shopping_cart(models.Model):
+class Shoppingcart(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

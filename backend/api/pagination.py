@@ -1,5 +1,6 @@
-from foodgram.constants import DEFAULT_PAGE_SIZE, PAGE_SIZE_QUERY_PARAM
 from rest_framework.pagination import PageNumberPagination
+
+from foodgram.constants import DEFAULT_PAGE_SIZE, PAGE_SIZE_QUERY_PARAM
 
 
 class CustomPaginator(PageNumberPagination):

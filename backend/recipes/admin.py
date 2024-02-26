@@ -36,13 +36,13 @@ class RecipeAdmin(admin.ModelAdmin):
         return obj.favorite_recipe.count()
 
 
-@admin.register(models.Recipe_ingredient)
+@admin.register(models.Recipeingredient)
 class RecipeIngredientAdmin(admin.ModelAdmin):
     list_display = ('pk', 'recipe', 'ingredient', 'amount')
     list_editable = ('ingredient', 'amount')
 
 
-@admin.register(models.Shopping_cart)
+@admin.register(models.Shoppingcart)
 class ShoppingCartAdmin(admin.ModelAdmin):
     list_display = ('pk', 'user', 'recipe')
     list_editable = ('user', 'recipe')
