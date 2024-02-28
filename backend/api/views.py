@@ -10,9 +10,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from foodgram.constants import NAME_DOWNLOAD_FILE
-from recipes.models import Ingredient, Recipe, Recipeingredient, Tag
+from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from users.models import Subscribe, User
-
 from .filters import RecipeFilter
 from .pagination import CustomPaginator
 from .permissions import IsAuthorOrReadOnly
@@ -20,13 +19,13 @@ from .serializers import (
     CreateRecipeSerializer,
     IngredientSerializer,
     ReadRecipeSerializer,
-    SubscribeAuthorSerializer,
+    SubscribeAuthorUserSerializer,
     SubscriptionsSerializer,
     TagSerializer,
     UserCreateSerializer,
     UserReadSerializer,
 )
-from .utils import FavoriteShoppingcartMixin
+from .utils import FavoriteShoppingCartMixin
 
 
 class UserViewSet(mixins.CreateModelMixin,
@@ -86,25 +85,23 @@ class UserViewSet(mixins.CreateModelMixin,
         author = get_object_or_404(User, id=kwargs['pk'])
 
         if request.method == 'POST':
-            serializer = SubscribeAuthorSerializer(
-                author, data=request.data, context={"request": request})
+            serializer = SubscribeAuthorUserSerializer(
+                data={'user': request.user.id, 'author': author.id},
+                context={'request': request}
+            )
             serializer.is_valid(raise_exception=True)
-            subscribe = Subscribe(user=request.user, author=author)
-            subscribe.save()
+            serializer.save(user=request.user, author=author)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        if request.method == 'DELETE':
-            if not Subscribe.objects.filter(user=request.user,
-                                            author=author).exists():
-                raise exceptions.ValidationError(
-                    'Подписка не оформлена, либо удалена.')
-            get_object_or_404(Subscribe,
-                              user=request.user, author=author).delete()
-            return Response(
-                {'detail': 'Успешная отписка'},
-                status=status.HTTP_204_NO_CONTENT)
-
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        if not Subscribe.objects.filter(user=request.user,
+                                        author=author).exists():
+            raise exceptions.ValidationError(
+                'Подписка не оформлена, либо удалена.')
+        get_object_or_404(Subscribe,
+                          user=request.user, author=author).delete()
+        return Response(
+            {'detail': 'Успешная отписка'},
+            status=status.HTTP_204_NO_CONTENT)
 
 
 class IngredientViewSet(mixins.ListModelMixin,
@@ -127,7 +124,7 @@ class TagViewSet(mixins.ListModelMixin,
     pagination_class = None
 
 
-class RecipeViewSet(FavoriteShoppingcartMixin, viewsets.ModelViewSet):
+class RecipeViewSet(FavoriteShoppingCartMixin, viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     pagination_class = CustomPaginator
     permission_classes = (IsAuthorOrReadOnly, )
@@ -144,7 +141,7 @@ class RecipeViewSet(FavoriteShoppingcartMixin, viewsets.ModelViewSet):
             permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request, **kwargs):
         ingredients = (
-            Recipeingredient.objects
+            RecipeIngredient.objects
             .filter(recipe__shopping_recipe__user=request.user)
             .values('ingredient__name', 'ingredient__measurement_unit')
             .annotate(total_amount=Sum('amount'))

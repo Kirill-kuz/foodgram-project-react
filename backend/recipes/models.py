@@ -118,7 +118,7 @@ class Recipe(models.Model):
         return self.name
 
 
-class Recipeingredient(models.Model):
+class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
@@ -153,7 +153,7 @@ class Recipeingredient(models.Model):
                 f'{self.ingredient.measurement_unit}')
 
 
-class Shoppingcart(models.Model):
+class ShoppingCart(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
