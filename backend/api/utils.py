@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from recipes.models import Favorite, Recipe, ShoppingCart
-from .serializers import ShoppingCartSerializer, FavoriteSerializer
+from .serializers import FavoriteSerializer, ShoppingCartSerializer
 
 
 class FavoriteShoppingCartMixin:
