@@ -18,9 +18,11 @@ class FavoriteShoppingCartMixin:
             return Response({'errors': 'Рецепта не существует.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        if not model.objects.filter(user=request.user, recipe=recipe).exists():
-            serializer_data = {'user': request.user.id, 'recipe': recipe.id}
-            if request.method == 'POST':
+        if request.method == 'POST':
+            if not model.objects.filter(user=request.user,
+                                        recipe=recipe).exists():
+                serializer_data = {'user': request.user.id,
+                                   'recipe': recipe.id}
                 if model == Favorite:
                     serializer = FavoriteSerializer(
                         data=serializer_data, context={'request': request})
@@ -31,12 +33,12 @@ class FavoriteShoppingCartMixin:
                 serializer.save(user=request.user, recipe=recipe)
                 return Response(
                     serializer.data, status=status.HTTP_201_CREATED)
-            get_object_or_404(model, user=request.user, recipe=recipe).delete()
-            return Response({'detail': message},
-                            status=status.HTTP_204_NO_CONTENT)
-        return Response(
-            {'errors': f"Рецепт уже в {message}"},
-            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'errors': f"Рецепт уже в {message}"},
+                status=status.HTTP_400_BAD_REQUEST)
+        get_object_or_404(model, user=request.user, recipe=recipe).delete()
+        return Response({'detail': message},
+                        status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=(IsAuthenticated,))
