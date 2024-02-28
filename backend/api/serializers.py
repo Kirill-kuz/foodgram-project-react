@@ -11,7 +11,6 @@ from recipes.models import (
     ShoppingCart,
     Tag,
 )
-
 from users.models import Subscribe, User
 from .fields import Base64ImageField
 
