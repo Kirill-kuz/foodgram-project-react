@@ -11,7 +11,8 @@ from .serializers import FavoriteSerializer, ShoppingCartSerializer
 
 
 class FavoriteShoppingCartMixin:
-    def process_request(self, request, kwargs, model, message):
+    def process_request(self, request, kwargs, model,
+                        action_type, serializer_class, message):
         try:
             recipe = get_object_or_404(Recipe, id=kwargs['pk'])
         except Http404:
@@ -23,30 +24,30 @@ class FavoriteShoppingCartMixin:
                                         recipe=recipe).exists():
                 serializer_data = {'user': request.user.id,
                                    'recipe': recipe.id}
-                if model == Favorite:
-                    serializer = FavoriteSerializer(
-                        data=serializer_data, context={'request': request})
-                elif model == ShoppingCart:
-                    serializer = ShoppingCartSerializer(
-                        data=serializer_data, context={'request': request})
+                serializer = serializer_class(
+                    data=serializer_data, context={'request': request})
                 serializer.is_valid(raise_exception=True)
                 serializer.save(user=request.user, recipe=recipe)
                 return Response(
                     serializer.data, status=status.HTTP_201_CREATED)
-            return Response(
-                {'errors': f"Рецепт уже в {message}"},
-                status=status.HTTP_400_BAD_REQUEST)
+            return Response({'errors': f"Рецепт уже в {message}"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
         get_object_or_404(model, user=request.user, recipe=recipe).delete()
-        return Response({'detail': message},
-                        status=status.HTTP_204_NO_CONTENT)
+        return Response({'detail': message}, status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=(IsAuthenticated,))
     def favorite(self, request, **kwargs):
-        return self.process_request(request, kwargs, Favorite, 'избранном')
+        action_type = 'избранное'
+        serializer_class = FavoriteSerializer
+        return self.process_request(request, kwargs, Favorite,
+                                    action_type, serializer_class, action_type)
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=(IsAuthenticated,), pagination_class=None)
     def shopping_cart(self, request, **kwargs):
-        return self.process_request(
-            request, kwargs, ShoppingCart, 'списке покупок')
+        action_type = 'списке покупок'
+        serializer_class = ShoppingCartSerializer
+        return self.process_request(request, kwargs, ShoppingCart,
+                                    action_type, serializer_class, action_type)

@@ -16,6 +16,7 @@ ALLOWED_HOSTS = os.getenv('SECRET_ALLOWED_HOSTS', default_allowed_hosts)
 ALLOWED_HOSTS = ALLOWED_HOSTS.split(',')
 ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS]
 
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
