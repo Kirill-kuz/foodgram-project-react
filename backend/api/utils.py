@@ -1,13 +1,9 @@
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from recipes.models import Favorite, Recipe, ShoppingCart
-
-from .serializers import FavoriteSerializer, ShoppingCartSerializer
+from recipes.models import Recipe
 
 
 class FavoriteShoppingCartMixin:
@@ -35,19 +31,3 @@ class FavoriteShoppingCartMixin:
 
         get_object_or_404(model, user=request.user, recipe=recipe).delete()
         return Response({'detail': message}, status=status.HTTP_204_NO_CONTENT)
-
-    @action(detail=True, methods=['post', 'delete'],
-            permission_classes=(IsAuthenticated,))
-    def favorite(self, request, **kwargs):
-        action_type = 'избранное'
-        serializer_class = FavoriteSerializer
-        return self.process_request(request, kwargs, Favorite,
-                                    action_type, serializer_class, action_type)
-
-    @action(detail=True, methods=['post', 'delete'],
-            permission_classes=(IsAuthenticated,), pagination_class=None)
-    def shopping_cart(self, request, **kwargs):
-        action_type = 'списке покупок'
-        serializer_class = ShoppingCartSerializer
-        return self.process_request(request, kwargs, ShoppingCart,
-                                    action_type, serializer_class, action_type)

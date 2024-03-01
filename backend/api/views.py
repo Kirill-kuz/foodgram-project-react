@@ -10,7 +10,14 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from foodgram.constants import NAME_DOWNLOAD_FILE
-from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
+from recipes.models import (
+    Favorite,
+    Ingredient,
+    Recipe,
+    RecipeIngredient,
+    ShoppingCart,
+    Tag,
+)
 from users.models import Subscribe, User
 
 from .filters import RecipeFilter
@@ -18,8 +25,10 @@ from .pagination import CustomPaginator
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (
     CreateRecipeSerializer,
+    FavoriteSerializer,
     IngredientSerializer,
     ReadRecipeSerializer,
+    ShoppingCartSerializer,
     SubscribeAuthorUserSerializer,
     SubscriptionsSerializer,
     TagSerializer,
@@ -132,6 +141,22 @@ class RecipeViewSet(FavoriteShoppingCartMixin, viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, )
     filterset_class = RecipeFilter
     http_method_names = ['get', 'post', 'patch', 'create', 'delete']
+
+    @action(detail=True, methods=['post', 'delete'],
+            permission_classes=(IsAuthenticated,))
+    def favorite(self, request, **kwargs):
+        action_type = 'избранное'
+        serializer_class = FavoriteSerializer
+        return self.process_request(request, kwargs, Favorite,
+                                    action_type, serializer_class, action_type)
+
+    @action(detail=True, methods=['post', 'delete'],
+            permission_classes=(IsAuthenticated,), pagination_class=None)
+    def shopping_cart(self, request, **kwargs):
+        action_type = 'списке покупок'
+        serializer_class = ShoppingCartSerializer
+        return self.process_request(request, kwargs, ShoppingCart,
+                                    action_type, serializer_class, action_type)
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
